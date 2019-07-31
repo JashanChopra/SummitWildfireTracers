@@ -86,8 +86,8 @@ def plotratios(hours, ethane=True, all=True, summer=True, viirs=True):
     sheetZ = sheetClean[z > thresh]                                             # remove non outliers
     sheetZ.reset_index(drop=True, inplace=True)
 
-    trajPlot(root, title=title, zscores=sheetZ, viirs=viirs)
+    trajPlot(root, title=title, zscores=sheetZ, viirs=viirs, summer=summer)
 
 
 if __name__ == '__main__':
-    plotratios(72, ethane=True, all=True, viirs=True, summer=False)
+    plotratios(72, ethane=True, all=True, viirs=True, summer=True)

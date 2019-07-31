@@ -13,7 +13,7 @@ import matplotlib.cm as cm
 import matplotlib as mpl
 
 
-def trajPlot(root, grids=True, title=None, zscores=None, viirs=True):
+def trajPlot(root, grids=True, title=None, zscores=None, viirs=True, summer=True):
     """
 
     :param root: Directory location of trajectory files
@@ -75,6 +75,24 @@ def trajPlot(root, grids=True, title=None, zscores=None, viirs=True):
         data['datetime'] = pd.Series(createdtimes).to_numpy()
         data.drop(['yr', 'mo', 'dy', 'hr'], axis=1, inplace=True)                   # drop old dates
 
+        # summer / winter removal
+        dates = data['datetime'].tolist()                                           # put datetimes in list
+        julian = []                                                                 # preallocate
+        for d in dates:                                                             # loop over each date
+            tt = d.timetuple()                                                      # create a timetuple from date
+            jul = tt.tm_yday                                                        # get the julian year
+            julian.append(jul)                                                      # append that to a list
+        data['julian'] = julian                                                     # add to dataframe
+
+        cutoffs = (120, 305)
+        if summer:
+            keep = np.logical_and(data['julian'] >= cutoffs[0],                     # find just summer values
+                                  data['julian'] <= cutoffs[1])
+        else:
+            keep = ~(np.logical_and(data['julian'] >= cutoffs[0],                   # find just winter values
+                                    data['julian'] <= cutoffs[1]))
+        data = data[keep]
+
         if len(data.index) != 0:                                                    # skip over empty dataframes
             zscores['datetime'] = [pd.Timestamp(x) for x in zscores['datetime']]
             merged = pd.merge_asof(data.sort_values('datetime'), zscores,           # merge with zscores
@@ -100,7 +118,7 @@ def trajPlot(root, grids=True, title=None, zscores=None, viirs=True):
     print('-- Trajectories Plotted')
 
     # plot fires -----
-    fire = fireData(viirs=viirs)                                                    # import fire data
+    fire = fireData(viirs=viirs, summer=summer)                                     # import fire data
     print('-- Fire Data Imported')
     print(len(fire))
 

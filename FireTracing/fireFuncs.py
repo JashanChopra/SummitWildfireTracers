@@ -2,9 +2,9 @@
 General functions used for fire tracing with the NASA VIIRS data
 """
 import pandas as pd
+import numpy as np
 
-
-def fireData(viirs=True):
+def fireData(viirs=True, summer=True):
     """
     Imports fire data and trims for use in trajectory plotting
 
@@ -32,6 +32,26 @@ def fireData(viirs=True):
 
     fire = firedt(fire)
 
+    # winter/summer fire removal
+    dates = fire['datetime'].tolist()                       # put datetimes in list
+    julian = []                                             # preallocate
+    for d in dates:                                         # loop over each date
+        tt = d.timetuple()                                  # create a timetuple from date
+        jul = tt.tm_yday                                    # get the julian year
+        julian.append(jul)                                  # append that to a list
+    fire['julian'] = julian                                 # add to dataframe
+
+    cutoffs = (120, 305)
+    if summer:
+        keep = np.logical_and(fire['julian'] >= cutoffs[0],  # find just summer values
+                              fire['julian'] <= cutoffs[1])
+        print('-- Winter Data Removed')
+    else:
+        keep = ~(np.logical_and(fire['julian'] >= cutoffs[0],  # find just winter values
+                                fire['julian'] <= cutoffs[1]))
+        print('-- Summer Data Removed')
+    fire = fire[keep]
+
     return fire
 
 
@@ -43,7 +63,6 @@ def firedt(dataframe):
     :return: the same dataframe with a datetime column
     """
 
-    import datetime as dt
     import pandas as pd
     import numpy as np
     from dateConv import createDatetime
