@@ -6,6 +6,7 @@ the entire root folder.
 """
 from numba import njit
 import numpy as np
+import pandas as pd
 
 def toYearFraction(date):
     """
@@ -147,7 +148,14 @@ def createDatetime(yr, mo, dy, hr):
 
     datetime = []
     for i in range(len(yr)):
-        time = dt.datetime(yr[i], mo[i], dy[i], hr[i])
+
+        if isinstance(yr[i], str):
+            if len(yr[i]) == 2:
+                yr[i] = '20' + yr[i]
+
+        time = dt.datetime(int(yr[i]), int(mo[i]),
+                           int(dy[i]), int(hr[i]))
+
         datetime.append(time)
 
     return datetime

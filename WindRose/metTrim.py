@@ -10,7 +10,7 @@ def metTrim():
     :return: met data
     """
     # ---- initial reading of data
-    root = r'C:\Users\ARL\Desktop\Jashan\MetData'
+    root = r'C:\Users\ARL\Desktop\Jashan\Data\MetData'
     ext = list(range(12, 20))                                                           # yearly extensions
 
     colnames = ['na', 'yr', 'mo', 'dy', 'hr', 'dir', 'spd', 'steady', 'na', 'na', 'na', 'na', 'na', 'na']

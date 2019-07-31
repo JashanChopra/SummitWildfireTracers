@@ -68,13 +68,15 @@ def trajPlot(root, grids=True, title=None, zscores=None, viirs=True):
         data.drop(badcols, axis=1, inplace=True)
         data.reset_index(drop=True, inplace=True)
 
-        data['datetime'] = createDatetime(data['yr'].values,                        # create datetimes
-                                          data['mo'].values,
-                                          data['dy'].values,
-                                          data['hr'].values)
+        createdtimes = createDatetime(data['yr'].values,                            # create datetimes
+                                      data['mo'].values,
+                                      data['dy'].values,
+                                      data['hr'].values)
+        data['datetime'] = pd.Series(createdtimes).to_numpy()
         data.drop(['yr', 'mo', 'dy', 'hr'], axis=1, inplace=True)                   # drop old dates
 
         if len(data.index) != 0:                                                    # skip over empty dataframes
+            zscores['datetime'] = [pd.Timestamp(x) for x in zscores['datetime']]
             merged = pd.merge_asof(data.sort_values('datetime'), zscores,           # merge with zscores
                                    on='datetime',
                                    direction='nearest',

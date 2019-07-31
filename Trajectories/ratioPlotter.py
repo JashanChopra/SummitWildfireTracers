@@ -5,6 +5,7 @@ from dateConv import decToDatetime
 from metRemoval import metRemove
 from scipy import stats
 import os
+import pandas as pd
 
 
 def plotratios(hours, ethane=True, all=True, summer=True, viirs=True):
@@ -48,7 +49,7 @@ def plotratios(hours, ethane=True, all=True, summer=True, viirs=True):
     sheet = sheet[sheet['value'] >= 0.000001]                                   # remove zero values
 
     sheet['datetime'] = decToDatetime(sheet['decyear'].values)                  # create datetimes from decyear
-    print('-- Datetimes Created')
+    sheet['datetime'] = sheet['datetime'] + pd.Timedelta('3 hours')             # convert tz to UTC
 
     dates = sheet['datetime'].tolist()                                          # put datetimes in list
     julian = []                                                                 # preallocate
@@ -64,8 +65,8 @@ def plotratios(hours, ethane=True, all=True, summer=True, viirs=True):
                               sheet['julian'] <= cutoffs[1])
         print('-- Winter Data Removed')
     else:
-        keep = np.logical_and(sheet['julian'] <= cutoffs[0],                    # find just winter values
-                              sheet['julian'] >= cutoffs[1])
+        keep = ~(np.logical_and(sheet['julian'] >= cutoffs[0],                  # find just winter values
+                                sheet['julian'] <= cutoffs[1]))
         print('-- Summer Data Removed')
     sheet = sheet[keep]
 
@@ -89,4 +90,4 @@ def plotratios(hours, ethane=True, all=True, summer=True, viirs=True):
 
 
 if __name__ == '__main__':
-    plotratios(72, ethane=True, all=True, viirs=True)
+    plotratios(72, ethane=True, all=True, viirs=True, summer=False)
