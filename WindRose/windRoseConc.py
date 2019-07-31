@@ -62,7 +62,7 @@ def windRose():
     ax1.bar(ethane['dir'].values, ethane['val'].values, normed=False, opening=0.9, edgecolor='black',
             nsector=24, bins=12, cmap=cm.viridis_r, blowto=False)
     ax1.set_title('Summit Ethane Conc. Residual [ppb]\n', fontsize=20)
-    ax1.set_legend(loc=8, fancybox=True, shadow=True, bbox_to_anchor=(0.70, -.45), prop=dict(size=16),
+    ax1.set_legend(loc=8, fancybox=True, shadow=True, bbox_to_anchor=(0.70, -.35), prop=dict(size=16),
                    fontsize='x-large')
     ax1.tick_params(axis='both', labelsize=16)
     plt.legend()
