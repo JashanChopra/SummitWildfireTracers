@@ -151,7 +151,7 @@ def trajPlot(root, grids=True, title=None, zscores=None, viirs=True, summer=True
                 matchlongs.append(f_longs[i])
                 matchlats.append(f_lats[i])
                 matchzscores.append(trajz)
-                print('Fire Match Identified')
+                print(f'Fire Match {i} Identified')
 
             else:
                 notlongs.append(f_longs[i])                                         # else, append elsewhere

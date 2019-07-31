@@ -35,8 +35,9 @@ def plotratios(hours, ethane=True, all=True, summer=True, viirs=True):
             sheet = readCsv(dataroot + r'\ethaneRatioNoaa.txt')
     else:
         if all:
-            root = r'C:\Users\ARL\Desktop\Jashan PySplit\pysplitprocessor-master\pysplitprocessor\ace_methane_all'
-            title = f'{hours}h Back Trajectories of Acetylene/Methane Ratio, 2012-2019'
+            root = r'C:\Users\ARL\Desktop\Jashan\Jashan ' \
+                   r'PySplit\pysplitprocessor-master\pysplitprocessor\aceTraj'
+            title = f'{hours}h Back Trajectories of Acetylene/Methane Ratio, 2012-2018'
             sheet = readCsv(dataroot + r'\aceRatioNoaa.txt')
         else:
             title = f'{hours}h Back Trajectories of Acetylene/Methane Ratio Outliers, 2012-2019'
@@ -90,4 +91,4 @@ def plotratios(hours, ethane=True, all=True, summer=True, viirs=True):
 
 
 if __name__ == '__main__':
-    plotratios(72, ethane=True, all=True, viirs=True, summer=True)
+    plotratios(72, ethane=False, all=True, viirs=True, summer=True)

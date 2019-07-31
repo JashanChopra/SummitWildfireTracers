@@ -51,6 +51,7 @@ def fireData(viirs=True, summer=True):
                                 fire['julian'] <= cutoffs[1]))
         print('-- Summer Data Removed')
     fire = fire[keep]
+    fire.reset_index(inplace=True, drop=True)
 
     return fire
 
