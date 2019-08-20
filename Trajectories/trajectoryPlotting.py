@@ -26,8 +26,7 @@ def trajPlot(root, grids=True, title=None, zscores=None, viirs=True, summer=True
     """
 
     # these lines trim the amount of days that the graph will show for smaller plots, comment them for the whole plot
-    startday = dt.datetime(2018, 7, 20)
-    endday = dt.datetime(2018, 7, 24)
+    backhours = 24
 
     fig = plt.figure(figsize=[10, 8])                                               # setup fig
     ax = fig.add_subplot(projection=ccrs.NearsidePerspective(-38, 72))              # subplots
@@ -42,7 +41,7 @@ def trajPlot(root, grids=True, title=None, zscores=None, viirs=True, summer=True
     if grids is True:
         ax.gridlines()                                                              # gridlines
 
-    ax.set_title(f'72h Back Trajectories of Acetylene/Methane Ratio, {startday}-{endday}')
+    ax.set_title(f'{backhours}h Back Trajectories of Acetylene/Methane Ratio, 2012-2019')
 
     # plot summit ----
     ax.plot(-38.4592, 72.5796, marker='*', color='green', markersize=10, alpha=0.9,
@@ -100,30 +99,46 @@ def trajPlot(root, grids=True, title=None, zscores=None, viirs=True, summer=True
         data = data[keep]
 
         if len(data.index) != 0:                                                    # skip over empty dataframes
-            if (data['datetime'].iloc[0] >= startday) & (data['datetime'].iloc[0] <= endday):
 
-                zscores['datetime'] = [pd.Timestamp(x) for x in zscores['datetime']]
-                merged = pd.merge_asof(data.sort_values('datetime'), zscores,           # merge with zscores
-                                       on='datetime',
-                                       direction='nearest',
-                                       tolerance=pd.Timedelta('1 hours'))
-                currentz = merged['zscores'].iloc[-1]  # identify z value of trajectory
-                # condition for
-                if np.isnan(currentz):
-                    continue
+            # remove value if given cutoff
+            data = data[data['backhrs'] >= -1 * backhours]
 
-                frame.append(merged)
+            zscores['datetime'] = [pd.Timestamp(x) for x in zscores['datetime']]
+            merged = pd.merge_asof(data.sort_values('datetime'), zscores,           # merge with zscores
+                                   on='datetime',
+                                   direction='nearest',
+                                   tolerance=pd.Timedelta('9 hours'))
 
+            if len(merged) == 0:
+                print('End Trajectories Removed')
+                continue
+
+            # identify z value of trajectory, stop condition if nan
+            currentz = merged['zscores'].iloc[-1]
+            if np.isnan(currentz):
+                print('No Z-Score Traj Removed')
+                continue
+
+            frame.append(merged)
+            if (len(data['long']) == 0) or (len(data['lat']) == 0):
+                print('Latitude or Longitude Values are empty')
+                continue
+
+            try:
                 track = sgeom.LineString(zip(data['long'].values, data['lat'].values))      # create trajectory
+            except ValueError as E:
+                print('Single Point, moving on')
+                continue
 
-                merged['zscores'] = currentz                                                # set all traj zscores as curr
-                nearmatch = zscorechart.flat[np.abs(zscorechart - currentz).argmin()]       # identify nearest match
-                index = np.where(zscorechart == nearmatch)[0][0]                            # identify index in zscorechart
-                z_color = tuple(colors[index].tolist())                                     # backsearch for color tuple
+            merged['zscores'] = currentz                                                # set all traj zscores as curr
+            nearmatch = zscorechart.flat[np.abs(zscorechart - currentz).argmin()]       # identify nearest match
+            index = np.where(zscorechart == nearmatch)[0][0]                            # identify index in zscorechart
+            z_color = tuple(colors[index].tolist())                                     # backsearch for color tuple
 
-                ax.add_geometries([track], ccrs.PlateCarree(),                              # add to plot
-                                  facecolor='none', edgecolor=z_color,
-                                  linewidth=0.5, label='Trajectories')
+            ax.add_geometries([track], ccrs.PlateCarree(),                              # add to plot
+                              facecolor='none', edgecolor=z_color,
+                              linewidth=0.5, label='Trajectories')
+            print('Trajectory Plotted')
 
     traj = pd.concat(frame, axis=0, ignore_index=True)                              # concat plots
     print('-- Trajectories Plotted')
@@ -132,8 +147,6 @@ def trajPlot(root, grids=True, title=None, zscores=None, viirs=True, summer=True
     fire = fireData(viirs=viirs, summer=summer)                                     # import fire data
     print('-- Fire Data Imported')
     print(len(fire))
-
-    fire = fire[(fire['datetime'] >= startday) & (fire['datetime'] <= endday)]
 
     matchlongs, matchlats = [], []                                                  # matches preallocated
     notlongs, notlats = [], []                                                      # non matches preallocated
