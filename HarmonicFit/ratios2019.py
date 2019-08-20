@@ -45,7 +45,7 @@ def ratios():
     """
 
     # import data sets
-    root = r'C:\Users\ARL\Desktop\J_Summit\analyses\Data'
+    root = r'C:\Users\ARL\Desktop\Jashan\Summit\analyses\Data'
     ethane = pd.read_csv(root + r'\ethaneFIT.txt', delim_whitespace=True, error_bad_lines=False, header=None)
     ace = pd.read_csv(root + r'\acetyleneFIT.txt', delim_whitespace=True, error_bad_lines=False, header=None)
     methane = pd.read_csv(root + r'\methane.txt', delim_whitespace=True, error_bad_lines=False, header=None)
@@ -67,15 +67,28 @@ def ratios():
 
     # create ratios
     tolerance = 3                                                                       # tolerance in hours
+    # convert tolerance to decimal doy
+    tolerance = ((tolerance / 24) / 365)
+
     ethane.name = 'ethane'
     ace.name = 'ace'
     for sheet in [ethane, ace]:
-        ratiosheet, datesheet = ratioCreator(tolerance, sheet, methane)
-        datesheet = decToDatetime(datesheet)
-        df = pd.DataFrame(columns=['datetime', 'val'])
-        df['datetime'], df['val'] = datesheet, ratiosheet
-        df = noaaDateConv(df)
-        df.to_csv(f'{sheet.name}Ratio.txt', header=None, index=None, sep=' ', mode='w+')
+        combinedsheet = pd.merge_asof(sheet.sort_values('DecYear'),
+                                      methane.sort_values('DecYear'),
+                                      on='DecYear',
+                                      tolerance=tolerance,
+                                      direction='nearest')
+        datesheet = decToDatetime(combinedsheet['DecYear'].tolist())
+        combinedsheet['datetime'] = datesheet
+        combinedsheet.columns = ['DecYear', f'{sheet.name}', 'methane', 'datetime']
+
+        ratio = combinedsheet[f'{sheet.name}'] / combinedsheet['methane']
+        combinedsheet.drop(['DecYear', f'{sheet.name}', 'methane'], axis=1, inplace=True)
+        combinedsheet['ratio'] = ratio
+        combinedsheet.dropna(axis=0, inplace=True, how='any')
+
+        df = noaaDateConv(combinedsheet)
+        df.to_csv(f'{sheet.name}Ratio_Aug.txt', header=None, index=None, sep=' ', mode='w+')
 
 
 if __name__ == '__main__':

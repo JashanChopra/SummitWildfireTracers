@@ -11,6 +11,8 @@ def fireData(viirs=True, summer=True):
     :param viirs: Default True condition, uses the VIIRS Data
     :return:
     """
+    import matplotlib.pyplot as plt
+
     # import fire data
     viirs = True
     root = r'C:\Users\ARL\Desktop\Jashan\Data\FireData'
@@ -40,6 +42,12 @@ def fireData(viirs=True, summer=True):
         jul = tt.tm_yday                                    # get the julian year
         julian.append(jul)                                  # append that to a list
     fire['julian'] = julian                                 # add to dataframe
+
+    # plt.hist(fire['julian'].tolist())
+    # plt.title('Fire Count by Julian Day')
+    # plt.xlabel('Julian Day')
+    # plt.ylabel('Count')
+    # plt.show()
 
     cutoffs = (120, 305)
     if summer:
